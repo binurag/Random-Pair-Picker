@@ -26,15 +26,6 @@ function normalizeNames(text) {
   return { names, duplicates: [...duplicates] };
 }
 
-function shuffleArray(items) {
-  const copy = [...items];
-  for (let i = copy.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
-}
-
 function buildCsv(matches) {
   const rows = [["Number", "Group A", "Group B"]];
   for (const match of matches) {
@@ -74,7 +65,6 @@ function buildValidationMessage(groupA, groupB) {
 export default function Page() {
   const [groupAInput, setGroupAInput] = useState("");
   const [groupBInput, setGroupBInput] = useState("");
-  const [shuffleGroupA, setShuffleGroupA] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(false);
   const [groupAOrder, setGroupAOrder] = useState(EMPTY_ARRAY);
   const [currentAIndex, setCurrentAIndex] = useState(0);
@@ -111,7 +101,6 @@ export default function Page() {
       const saved = JSON.parse(raw);
       setGroupAInput(typeof saved.groupAInput === "string" ? saved.groupAInput : "");
       setGroupBInput(typeof saved.groupBInput === "string" ? saved.groupBInput : "");
-      setShuffleGroupA(Boolean(saved.shuffleGroupA));
       setSessionStarted(Boolean(saved.sessionStarted));
       setGroupAOrder(Array.isArray(saved.groupAOrder) ? saved.groupAOrder : EMPTY_ARRAY);
       setCurrentAIndex(Number.isInteger(saved.currentAIndex) ? saved.currentAIndex : 0);
@@ -128,7 +117,6 @@ export default function Page() {
     const payload = {
       groupAInput,
       groupBInput,
-      shuffleGroupA,
       sessionStarted,
       groupAOrder,
       currentAIndex,
@@ -141,7 +129,6 @@ export default function Page() {
     loaded,
     groupAInput,
     groupBInput,
-    shuffleGroupA,
     sessionStarted,
     groupAOrder,
     currentAIndex,
@@ -193,7 +180,6 @@ export default function Page() {
     localStorage.removeItem(STORAGE_KEY);
     setGroupAInput("");
     setGroupBInput("");
-    setShuffleGroupA(false);
     setSessionStarted(false);
     setGroupAOrder(EMPTY_ARRAY);
     setCurrentAIndex(0);
@@ -214,7 +200,7 @@ export default function Page() {
       return;
     }
 
-    const orderedA = shuffleGroupA ? shuffleArray(normalizedA.names) : normalizedA.names;
+    const orderedA = normalizedA.names;
 
     setGroupAInput(normalizedA.names.join("\n"));
     setGroupBInput(normalizedB.names.join("\n"));
@@ -336,18 +322,6 @@ export default function Page() {
       </section>
 
       <section className="controls-card">
-        <div className="toggle-row">
-          <label className="toggle">
-            <input
-              type="checkbox"
-              checked={shuffleGroupA}
-              onChange={(event) => setShuffleGroupA(event.target.checked)}
-              disabled={sessionStarted}
-            />
-            <span>Shuffle Group A before matching</span>
-          </label>
-        </div>
-
         <div className="button-row">
           <button className="primary-button" onClick={startMatching} disabled={!canStart}>
             Start
