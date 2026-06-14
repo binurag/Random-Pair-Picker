@@ -26,6 +26,24 @@ function normalizeNames(text) {
   return { names, duplicates: [...duplicates] };
 }
 
+function randomIndex(max) {
+  if (max <= 0) return 0;
+  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
+    const limit = Math.floor(0x100000000 / max) * max;
+    const buffer = new Uint32Array(1);
+    let value = 0;
+
+    do {
+      crypto.getRandomValues(buffer);
+      value = buffer[0];
+    } while (value >= limit);
+
+    return value % max;
+  }
+
+  return Math.floor(Math.random() * max);
+}
+
 function buildCsv(matches) {
   const rows = [["Number", "Group A", "Group B"]];
   for (const match of matches) {
@@ -234,7 +252,7 @@ export default function Page() {
 
     spinTimerRef.current = setTimeout(() => {
       clearTimers();
-      const finalName = spinNames[Math.floor(Math.random() * spinNames.length)];
+      const finalName = spinNames[randomIndex(spinNames.length)];
       const nextMatch = {
         number: matches.length + 1,
         groupA: currentA,
